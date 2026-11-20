@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/asim9115/incidentix/internal/agent/collector"
+	"github.com/asim9115/incidentix/internal/agent/detector"
 )
 
 // Metrics is a collection of the records in memory that contains cpu, ram and disk
@@ -31,12 +32,14 @@ func (m *MetricsWindow) Push(metric collector.Metrics) {
 //Agent calls collector.collect
 type Agent struct {
 	collector collector.Collector
+	detector  detector.Detector
 	window    *MetricsWindow
 }
 
-func New(c collector.Collector) *Agent {
+func New(c collector.Collector, d detector.Detector) *Agent {
 	return &Agent{
 		collector: c,
+		detector: d,
 		window:    NewMetricWindow(24),
 	}
 }
@@ -56,6 +59,7 @@ func (a *Agent) Run(ctx context.Context) error {
 
 			}
 			a.window.Push(metrics)
+			a.detector.EvaluateMetrics(a.window.Metrics)
 		}
 	}
 }

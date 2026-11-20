@@ -1,15 +1,21 @@
 package application
 
 import (
-    "context"
-    "testing"
-    "time"
+	"context"
+	"testing"
+	"time"
 
-    "github.com/asim9115/incidentix/internal/agent/collector"
+	"github.com/asim9115/incidentix/internal/agent/collector"
+	"github.com/asim9115/incidentix/internal/agent/detector"
 )
 
 func TestAgentIntegration(t *testing.T) {
-    agent := New(collector.NewSystemCollector())
+    detector := detector.New(detector.MetricsThreshold{
+        CpuMax: 90,
+        MemoryMax: 92,
+        DiskMax: 90,
+    })
+    agent := New(collector.NewSystemCollector(), detector)
 
     ctx, cancel := context.WithTimeout(context.Background(), 17*time.Second)
     defer cancel()

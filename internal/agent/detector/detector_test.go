@@ -138,8 +138,8 @@ func TestEngine(t *testing.T) {
 		MemoryMax: 91,
 		DiskMax:   86,
 	}
-
-	incidents := EvaluateMetrics(fake_metrics, threshold)
+	detector := New(threshold)
+	incidents := detector.EvaluateMetrics(fake_metrics)
 	for _, i := range incidents {
 		t.Logf("incident: type=%s severity=%s metric=%.2f", i.Type, i.Severity, i.Metric)
 	}

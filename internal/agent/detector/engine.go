@@ -4,18 +4,30 @@ import (
 	"github.com/asim9115/incidentix/internal/agent/collector"
 )
 
-func EvaluateMetrics(window []collector.Metrics, threshold MetricsThreshold)[]Incident {
+type Detector interface {
+	EvaluateMetrics(window []collector.Metrics) []Incident
+}
+
+type SystemDetector struct {
+	threshold MetricsThreshold
+}
+
+func New(threshold MetricsThreshold) *SystemDetector{
+	return &SystemDetector{threshold: threshold}
+}
+
+func (d *SystemDetector)EvaluateMetrics(window []collector.Metrics)[]Incident {
 	var incidents []Incident
 
-	if incident := checkCPU(window, threshold.CpuMax); incident != nil {
+	if incident := checkCPU(window, d.threshold.CpuMax); incident != nil {
 		incidents = append(incidents, *incident)
 	}
 
-	if incident := checkMemory(window, threshold.MemoryMax); incident != nil {
+	if incident := checkMemory(window, d.threshold.MemoryMax); incident != nil {
 		incidents = append(incidents, *incident)
 	}
 
-	if incident := checkDisk(window, threshold.DiskMax); incident != nil {
+	if incident := checkDisk(window, d.threshold.DiskMax); incident != nil {
 		incidents = append(incidents, *incident)
 	}
 	return incidents
