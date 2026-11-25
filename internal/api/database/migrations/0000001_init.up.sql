@@ -1,0 +1,21 @@
+-- Server
+
+CREATE TABLE IF NOT EXISTS servers (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    total_cpu BIGINT NOT NULL,
+    total_ram BIGINT NOT NULL,
+    total_space BIGINT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS metrics (
+    id TEXT PRIMARY KEY,
+    server_id TEXT NOT NULL REFERENCES servers(id) ON DELETE CASCADE,
+    ts TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    cpu REAL NOT NULL CHECK (cpu BETWEEN 0 AND 100),
+    ram REAL NOT NULL CHECK (ram BETWEEN 0 AND 100),
+    space REAL NOT NULL CHECK (space BETWEEN 0 AND 100)
+);
+
+CREATE INDEX idx_metrics_server_ts
+ON metrics (server_id, ts DESC);

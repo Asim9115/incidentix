@@ -1,10 +1,13 @@
+
 package main
 
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"os/signal"
 	"syscall"
 	"time"
@@ -15,43 +18,86 @@ import (
 )
 
 func main() {
-	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
-
-	//Load env
-	config, err := config.Load()
-	if err != nil {
-		log.Fatalf("failed to load env %v", err)
+	if err := run(); err != nil {
+		log.Printf("application stopped: %v", err)
+		os.Exit(1)
 	}
-	log.Print(config.POSTGRES_URL)
-	//Database
-	db := database.New(config.POSTGRES_URL)
+}
+
+func run() error {
+	ctx, stop := signal.NotifyContext(
+		context.Background(),
+		syscall.SIGINT,
+		syscall.SIGTERM,
+	)
+	defer stop()
+
+	// Load configuration
+	cfg, err := config.Load()
+	if err != nil {
+		return fmt.Errorf("failed to load config: %w", err)
+	}
+
+	// Database
+	db := database.New(cfg.POSTGRES_URL)
+
 	if err := db.Connect(ctx); err != nil {
-		log.Fatalf("failed to connect to database: %v", err)
+		return fmt.Errorf("failed to connect to database: %w", err)
 	}
 	defer db.Close()
 
-	router := router.New(db)
-
-	server := &http.Server{
-		Addr: ":8080",
-		Handler: router,
+	// Migrations
+	if err := db.RunMigrations(); err != nil {
+		return fmt.Errorf("failed to run migrations: %w", err)
 	}
 
-	//start the server
+	// Router
+	r := router.New(db)
+
+	// HTTP server
+	server := &http.Server{
+		Addr:         ":8080",
+		Handler:      r,
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		IdleTimeout:  60 * time.Second,
+	}
+
+	serverErr := make(chan error, 1)
+
 	go func() {
-		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			log.Fatalf("server error: %v", err)
+		log.Println("server listening on :8080")
+
+		if err := server.ListenAndServe(); err != nil &&
+			!errors.Is(err, http.ErrServerClosed) {
+			serverErr <- err
 		}
-		log.Print("server running on port :8080")
 	}()
 
-	<-ctx.Done()
-	stop()
-	
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	// Wait for shutdown signal or server failure
+	var runErr error
+
+	select {
+	case <-ctx.Done():
+		log.Println("shutdown signal received")
+
+	case err := <-serverErr:
+		runErr = fmt.Errorf("server failed: %w", err)
+	}
+
+	// Graceful shutdown
+	shutdownCtx, cancel := context.WithTimeout(
+		context.Background(),
+		5*time.Second,
+	)
 	defer cancel()
 
 	if err := server.Shutdown(shutdownCtx); err != nil {
-		log.Printf("server forced to shutdown: %v", err)
+		log.Printf("graceful shutdown failed: %v", err)
+		if closeErr := server.Close(); closeErr != nil {
+			log.Printf("forced shutdown failed: %v", closeErr)
+		}
 	}
+
+	return runErr
 }
