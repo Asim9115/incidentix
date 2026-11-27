@@ -10,7 +10,7 @@ type ServerRepo struct {
 	db *database.DataBase
 }
 
-func NewServersService(db *database.DataBase) *ServerRepo {
+func NewServerRepo(db *database.DataBase) *ServerRepo {
 	return &ServerRepo{
 		db: db,
 	}
@@ -57,7 +57,7 @@ func (s *ServerRepo) GetServerByName(ctx context.Context, name string) (*Server,
 }
 
 func (s *ServerRepo) GetAll(ctx context.Context) (*[]Server, error) {
-	rows, err := s.db.Pool.Query(ctx, `SELECT id, name, token, total_ram, total_cpu, total_space FROM servers`)
+	rows, err := s.db.Pool.Query(ctx, `SELECT id, name, token, total_cpu, total_ram, total_space FROM servers`)
 
 	if err != nil {
 		return nil ,err

@@ -13,10 +13,10 @@ func New(db *database.DataBase) *gin.Engine {
 
 	mrepo := repository.NewMetricsRepo(db)
 	metrics := service.NewMetricsService(mrepo)
-	srepo := repository.NewServersService(db)
+	srepo := repository.NewServerRepo(db)
 	servers := service.NewServersService(srepo)
 
-	h := handler.New(db, metrics, servers)
+	h := handler.New(metrics, servers)
 
 	r.POST("/v1/agents/metrics", h.HandleHeartBeats)
 	r.GET("/v1/agents/metrics/all", h.DisplayAll)
