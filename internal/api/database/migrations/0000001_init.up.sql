@@ -3,7 +3,7 @@
 CREATE TABLE IF NOT EXISTS servers (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
-    token TEXT UNIQUE DEFAULT "",
+    token TEXT UNIQUE DEFAULT '',
     total_cpu BIGINT NOT NULL DEFAULT 0,
     total_ram BIGINT NOT NULL DEFAULT 0,
     total_space BIGINT NOT NULL DEFAULT 0

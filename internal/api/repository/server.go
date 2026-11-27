@@ -35,7 +35,7 @@ func (s *ServerRepo) AddServer(ctx context.Context, srv *Server) error {
 }
 
 func (s *ServerRepo) GetServerByName(ctx context.Context, name string) (*Server, error) {
-	row := s.db.Pool.QueryRow(ctx, `SELECT (id, name, token, total_cpu, total_ram, total_space) from 
+	row := s.db.Pool.QueryRow(ctx, `SELECT id, name, token, total_cpu, total_ram, total_space from 
 					servers where name=$1`, name)
 
 	var server Server
@@ -54,4 +54,31 @@ func (s *ServerRepo) GetServerByName(ctx context.Context, name string) (*Server,
 	}
 
 	return &server, nil
+}
+
+func (s *ServerRepo) GetAll(ctx context.Context) (*[]Server, error) {
+	rows, err := s.db.Pool.Query(ctx, `SELECT id, name, token, total_ram, total_cpu, total_space FROM servers`)
+
+	if err != nil {
+		return nil ,err
+	}
+	defer rows.Close()
+
+	var servers []Server
+	for rows.Next() {
+		var server Server
+		if err := rows.Scan(
+			&server.ID, &server.Name, &server.Token, &server.TotalCPU, &server.TotalMemory, &server.TotalSpace,
+		); err != nil {
+			return nil, err
+		}
+
+		servers = append(servers, server)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return &servers, nil
 }

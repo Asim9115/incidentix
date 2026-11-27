@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"crypto/rand"
 	"log"
 	"net/http"
 	"time"
@@ -40,9 +41,9 @@ func (h *Handler) HandleHeartBeats(c *gin.Context) {
 		return
 	}
 	
-	if err := h.metrics.StoreMetrics(c, "temp", "temp", m.CPU.Usage, m.Memory.Usage, m.Disk.Usage, m.Timestamp); err != nil {
+	if err := h.metrics.StoreMetrics(c, rand.Text(), "HYMBRX6P", m.CPU.Usage, m.Memory.Usage, m.Disk.Usage, m.Timestamp); err != nil {
 		log.Printf(err.Error())
-		c.JSON(http.StatusBadGateway, gin.H{"error":err})
+		c.JSON(http.StatusBadGateway, gin.H{"error":err.Error()})
 		return
 	}
 
@@ -54,7 +55,7 @@ func (h *Handler) DisplayAll(c *gin.Context) {
 	if err != nil {
 				log.Printf(err.Error())
 
-		c.JSON(http.StatusInternalServerError, gin.H{"error":err})
+		c.JSON(http.StatusInternalServerError, gin.H{"error":err.Error()})
 		return
 	}
 	c.JSON(http.StatusAccepted, metrics)

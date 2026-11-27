@@ -10,7 +10,7 @@ import (
 
 func New(db *database.DataBase) *gin.Engine {
 	r := gin.Default()
-	
+
 	mrepo := repository.NewMetricsRepo(db)
 	metrics := service.NewMetricsService(mrepo)
 	srepo := repository.NewServersService(db)
@@ -20,5 +20,8 @@ func New(db *database.DataBase) *gin.Engine {
 
 	r.POST("/v1/agents/metrics", h.HandleHeartBeats)
 	r.GET("/v1/agents/metrics/all", h.DisplayAll)
+
+	r.POST("/v1/agents/server", h.RegisterServer)
+	r.GET("/v1/agents/server/all", h.GetAllServers)
 	return r
 }

@@ -38,7 +38,7 @@ func (r *MetricsRepo) Insert(ctx context.Context, id, serverID string, cpu, ram,
 }
 
 func (r *MetricsRepo) DisplayAll(ctx context.Context) (*[]Metrics, error) {
-	rows, err := r.db.Pool.Query(ctx, `SELECT * FROM metrics`)
+	rows, err := r.db.Pool.Query(ctx, `SELECT id, cpu, ram, space, server_id, ts FROM metrics`)
 	if err != nil {
 		return nil, err
 	}

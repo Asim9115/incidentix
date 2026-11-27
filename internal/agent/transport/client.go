@@ -39,7 +39,7 @@ func (c *Client) SendMetrics(ctx context.Context, metrics collector.Metrics) err
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode != http.StatusAccepted {
     	return fmt.Errorf("unexpected status: %d", resp.StatusCode)
 	}
 	return nil
