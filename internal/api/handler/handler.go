@@ -8,12 +8,14 @@ import (
 type Handler struct {
 	db *database.DataBase
 	metrics *service.MetricsService
+	servers *service.ServersService
 }
 
 
-func New(db *database.DataBase, metrics *service.MetricsService) *Handler{
+func New(db *database.DataBase, metrics *service.MetricsService, servers *service.ServersService) *Handler{
 	return &Handler{
 		db:db,
 		metrics: metrics,
+		servers: servers,
 	}
 }

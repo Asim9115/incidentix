@@ -10,10 +10,15 @@ import (
 
 func New(db *database.DataBase) *gin.Engine {
 	r := gin.Default()
-	repo := repository.NewMetricsRepo(db)
-	metrics := service.NewMetricsService(repo)
-	h := handler.New(db, metrics)
+	
+	mrepo := repository.NewMetricsRepo(db)
+	metrics := service.NewMetricsService(mrepo)
+	srepo := repository.NewServersService(db)
+	servers := service.NewServersService(srepo)
+
+	h := handler.New(db, metrics, servers)
 
 	r.POST("/v1/agents/metrics", h.HandleHeartBeats)
+	r.GET("/v1/agents/metrics/all", h.DisplayAll)
 	return r
 }

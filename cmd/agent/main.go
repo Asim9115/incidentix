@@ -21,7 +21,7 @@ func main() {
 		MemoryMax: 90,
 		DiskMax: 90,
 	}
-	t := transport.New("http://localhost:8000")
+	t := transport.New("http://localhost:8080")
 	d := detector.New(threshold)
 	agent := application.New(c, d, t)
 

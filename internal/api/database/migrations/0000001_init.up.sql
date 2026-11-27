@@ -3,9 +3,10 @@
 CREATE TABLE IF NOT EXISTS servers (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
-    total_cpu BIGINT NOT NULL,
-    total_ram BIGINT NOT NULL,
-    total_space BIGINT NOT NULL
+    token TEXT UNIQUE DEFAULT "",
+    total_cpu BIGINT NOT NULL DEFAULT 0,
+    total_ram BIGINT NOT NULL DEFAULT 0,
+    total_space BIGINT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS metrics (
